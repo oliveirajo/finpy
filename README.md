@@ -1,0 +1,2 @@
+# finpy
+Finance with Python
