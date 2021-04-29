@@ -1,0 +1,4 @@
+msft
+aapl
+iipr
+tsla
