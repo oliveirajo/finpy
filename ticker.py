@@ -1,6 +1,8 @@
 import yfinance as yf
 
-msft = yf.Ticker("MSFT")
+msft = yf.Ticker("AAPL")
+data = yf.download("SPY AAPL", start="2017-01-01", end="2017-04-30",
+                   group_by="ticker")
 
 #print(msft.info)
 #print(msft.history(period="max"))
