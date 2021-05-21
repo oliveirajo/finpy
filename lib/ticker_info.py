@@ -7,7 +7,21 @@ sys.path.append('C:/Users/a73045/Desktop/finpy/finpy/')
 import db.conn as db
 
 #logging
-logging.basicConfig(filename='debug.log', encoding='utf-8', level=logging.DEBUG)
+logger = logging.getLogger(__name__)
+logger.setLevel(logging.DEBUG)
+
+formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
+
+file_handler = logging.FileHandler('C:/Users/a73045/Desktop/finpy/finpy/log/ticcker_info.log')
+file_handler.setLevel(logging.DEBUG)
+file_handler.setFormatter(formatter)
+
+stream_handler = logging.StreamHandler()
+stream_handler.setFormatter(formatter)
+
+logger.addHandler(file_handler)
+logger.addHandler(stream_handler)
+
 
 def get_ticker_info():
     cnx = db.create_connection()
@@ -23,7 +37,7 @@ def get_ticker_info():
         db.create_ticker_table(cnx,tipo)
 
         # initialize database
-        query = "SELECT ticker FROM sp500 LIMIT 10"
+        query = "SELECT ticker FROM sp500"
         c = cnx.cursor()
         c.execute(query)
         test = c.fetchall()
@@ -41,8 +55,7 @@ def get_ticker_info():
                 db.init_ticker_table(cnx,dic,'ticker')
         cnx.commit()
     else:
-        print("ERROR! CANNOT CREATE DB CONNECTION!")
-
+        logger.debug("ERROR! CANNOT CREATE DB CONNECTION!")
 
 def get_sp500():
     # db conn
@@ -70,7 +83,7 @@ def get_sp500():
     for cpm in sp:
         for number in cpm:
             final_sp.append(number)
-            print(number)
+            logger.info(number)
         
             sql = "INSERT INTO sp500(ticker,company_name,sector) VALUES (%s, %s, %s)"
             val = (number[0], number[1],number[2])

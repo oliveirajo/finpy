@@ -59,3 +59,17 @@ def init_ticker_table(cnx,company,table):
     #print(test)
   except mysql.connector.Error as e:
     print(e)
+
+def init_blc_sheet_table(cnx,table,df):
+  cols = ",".join(df.columns)
+  cols_clean = cols.replace(" ","_")  
+  # Insert DataFrame records one by one.
+  for i,row in df.iterrows():
+    placeholder = ", ".join(["%s"] * len(row))
+    sql = "INSERT INTO {table}({cols}) VALUES ({placeholder});".format(table=table, cols=cols_clean, placeholder=placeholder)
+    print(sql)
+    c = cnx.cursor()
+    c.execute(sql, tuple(row))
+    print(tuple(row))
+# the connection is not autocommitted by default, so we must commit to save our # changes 
+    cnx.commit()
