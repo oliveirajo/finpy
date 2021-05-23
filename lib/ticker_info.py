@@ -3,6 +3,7 @@ import pandas as pd
 import sys
 import logging
 from datapackage import Package
+import datetime as dt
 sys.path.append('C:/Users/a73045/Desktop/finpy/finpy/')
 import db.conn as db
 
@@ -88,4 +89,42 @@ def get_sp500():
             sql = "INSERT INTO sp500(ticker,company_name,sector) VALUES (%s, %s, %s)"
             val = (number[0], number[1],number[2])
             c.execute(sql, val)
+            cnx.commit()
+
+def get_blc_sheet():
+    cnx = db.create_connection()
+    c = cnx.cursor()
+    msft = yf.Ticker("AAPL")
+    blc_sheet = msft.balance_sheet
+    create_sql = "CREATE TABLE IF NOT EXISTS blc_sheet(date_inserted datetime,Date date,Ticker varchar(50),Total_Liab float,"\
+                "Total_Stockholder_Equity float,Other_Current_Liab float,Total_Assets float,"\
+                "Common_Stock float,Other_Current_Assets float,Retained_Earnings float,Other_Liab float,Treasury_Stock float,Other_Assets float,"\
+                "Cash float,Total_Current_Liabilities float,Short_Long_Term_Debt float,Other_Stockholder_Equity float,Property_Plant_Equipment float,"\
+                "Total_Current_Assets float,Long_Term_Investments float,Net_Tangible_Assets float,Short_Term_Investments float,Net_Receivables float,"\
+                "Long_Term_Debt float,Inventory float,Accounts_Payable float)"
+    c.execute(create_sql)
+    db.delete_table(cnx,'ticker')
+    query = "SELECT ticker FROM sp500"
+    c.execute(query)
+    test = c.fetchall()
+    for item in test:
+        df = pd.DataFrame(data=blc_sheet)
+        df1 = df.transpose()
+        df1.index = df1.index.set_names(['Date'])
+        df1.insert(0,'Ticker',item[0])
+        df1.reset_index(level=0,inplace=True)
+        df1['Date'] = df1['Date'].astype('str')
+        now = dt.datetime.now()
+        df1.insert(0,'date_inserted',now)
+        df1['date_inserted'] = df1['date_inserted'].astype('str')
+        #creating column lsit for insertion
+        cols = ",".join(df1.columns)
+        cols_clean = cols.replace(" ","_")
+
+        # Insert DataFrame records one by one.
+        for i,row in df1.iterrows():
+            placeholder = ", ".join(["%s"] * len(row))
+            sql = "INSERT INTO blc_sheet({cols}) VALUES ({placeholder});".format(cols=cols_clean, placeholder=placeholder)
+            c.execute(sql, tuple(row))
+        # the connection is not autocommitted by default, so we must commit to save our # changes 
             cnx.commit()
