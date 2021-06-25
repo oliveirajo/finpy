@@ -1,8 +1,10 @@
-from re import T
 import mysql.connector
 
 # db conn
 def create_connection():
+  cnx= None
+  print(cnx)
+
   try:
       cnx = mysql.connector.connect(user='root',
                                   password='root',
@@ -17,6 +19,34 @@ def create_connection():
       print(err)
   return cnx
 
+def execute_query(connection, query):
+    cursor = connection.cursor()
+    try:
+        cursor.execute(query)
+        connection.commit()
+        print("Query successful")
+    except mysql.connector.Error as err:
+        print(f"Error: '{err}'")
+
+def execute_list_query(connection, sql, val):
+    cursor = connection.cursor()
+    try:
+        cursor.executemany(sql, val)
+        connection.commit()
+        print("Query successful")
+    except mysql.connector.Error as err:
+        print(f"Error: '{err}'")
+
+def read_query(connection, query):
+    cursor = connection.cursor()
+    result = None
+    try:
+        cursor.execute(query)
+        result = cursor.fetchall()
+        return result
+    except mysql.connector.Error as err:
+        print(f"Error: '{err}'")
+
 def create_ticker_table(cnx, company):
   query = 'CREATE TABLE IF NOT EXISTS ticker ('+' text, '.join(company.keys())+' text)'
 
@@ -28,12 +58,7 @@ def create_ticker_table(cnx, company):
     print(e)
 
 def create_blc_sheet_table(cnx):
-  query = "CREATE TABLE IF NOT EXISTS blc_sheet(date_inserted datetime,Date date,Ticker varchar(50),Total_Liab float,"\
-                "Total_Stockholder_Equity float,Other_Current_Liab float,Total_Assets float,"\
-                "Common_Stock float,Other_Current_Assets float,Retained_Earnings float,Other_Liab float,Treasury_Stock float,Other_Assets float,"\
-                "Cash float,Total_Current_Liabilities float,Short_Long_Term_Debt float,Other_Stockholder_Equity float,Property_Plant_Equipment float,"\
-                "Total_Current_Assets float,Long_Term_Investments float,Net_Tangible_Assets float,Short_Term_Investments float,Net_Receivables float,"\
-                "Long_Term_Debt float,Inventory float,Accounts_Payable float)"
+  query = "CREATE TABLE IF NOT EXISTS blc_sheet(date_inserted datetime,Ticker varchar(50),Operation varchar(250),Date date,Value float)"
   try:
     c = cnx.cursor()
     c.execute(query)
@@ -66,25 +91,24 @@ def create_cashflow_table(cnx):
   except mysql.connector.Error as e:
     print(e)
 
+def create_actions_table(cnx):
+  query = "CREATE TABLE IF NOT EXISTS actions(date_inserted datetime,Date date,Ticker varchar(50),Dividends float,Stock_Splits float);"
+  try:
+    c = cnx.cursor()
+    c.execute(query)
+  except mysql.connector.Error as e:
+    print(e)
+
 
 def create_table(cnx, table,cols_info):
   #query = "CREATE TABLE IF NOT EXISTS {table} ("+", ".join(cols_info)+" );".format(table=table)
   query = "CREATE TABLE IF NOT EXISTS {table} ({cols});".format(table=table, cols=",".join(cols_info))
-  print(query)
+  #print(query)
 
   try:
     c = cnx.cursor()
     c.execute(query)
     
-  except mysql.connector.Error as e:
-    print(e)
-
-def delete_table(cnx,table):
-  # delete data from table
-  del_query = "DELETE FROM {table};".format(table=table)
-  try:
-    c = cnx.cursor()
-    c.execute(del_query)
   except mysql.connector.Error as e:
     print(e)
 
