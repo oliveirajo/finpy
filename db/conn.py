@@ -7,7 +7,7 @@ def create_connection():
 
   try:
       cnx = mysql.connector.connect(user='root',
-                                  password='root',
+                                  password='smms',
                                   host='127.0.0.1',
                                   database='fin')
   except mysql.connector.Error as err:

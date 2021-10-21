@@ -4,25 +4,8 @@ import sys
 import logging
 from datapackage import Package
 import datetime as dt
-sys.path.append('C:/Users/a73045/Desktop/finpy/finpy/')
+sys.path.append('/Users/joelamaro/Desktop/finance/finpy/finpy')
 import db.conn as db
-
-#logging
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.DEBUG)
-
-formatter = logging.Formatter('%(asctime)s:%(name)s:%(message)s')
-
-file_handler = logging.FileHandler('C:/Users/a73045/Desktop/finpy/finpy/log/ticcker_info.log')
-file_handler.setLevel(logging.DEBUG)
-file_handler.setFormatter(formatter)
-
-stream_handler = logging.StreamHandler()
-stream_handler.setFormatter(formatter)
-
-logger.addHandler(file_handler)
-logger.addHandler(stream_handler)
-
 
 def get_ticker_info(): #validated
     cnx = db.create_connection()
@@ -62,6 +45,8 @@ def get_sp500():
     cols = {"ticker varchar(10)",
     "company_name varchar(50)",
     "sector varchar(50)"}    
+    create_query = " CREATE TABLE IF NOT EXISTS SP500 (ticker varchar(10),company_name varchar(50), sector varchar(50))"
+    db.execute_query(cnx,create_query)
     # delete table
     del_query = "DELETE FROM sp500"
     db.execute_query(cnx,del_query)
